@@ -1,0 +1,26 @@
+{
+  "name": "webmcp-legalize-kr",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "index:laws": "node scripts/build-law-index.mjs",
+    "preview": "vite preview",
+    "verify:static": "node scripts/verify-static-deploy.mjs",
+    "predeploy": "pnpm run build && pnpm run verify:static",
+    "deploy": "wrangler pages deploy dist --project-name=webmcp-legalize-kr --branch=main"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vitest": "^4.1.11",
+    "webmcp-types": "^0.1.5",
+    "wrangler": "^4.127.1"
+  }
+}
