@@ -4,6 +4,8 @@ A WebMCP-powered workspace where a person defines the legal text, dates, provisi
 
 Live demo: `https://webmcp-legalize-kr.pages.dev`
 Source: `https://github.com/9bow/webmcp-legalize-kr`
+Devpost: `https://devpost.com/software/legalize-kr-webmcp`
+Demo video: `https://www.youtube.com/watch?v=jqVPedEtprw`
 
 > This project supports source review and does not provide legal advice. Verify conclusions against the official text and seek qualified advice when needed.
 

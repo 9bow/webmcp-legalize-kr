@@ -64,4 +64,5 @@ The app and repository were created from scratch during the WebMCP Challenge sub
 
 - Live app: https://webmcp-legalize-kr.pages.dev
 - Public repository: https://github.com/9bow/webmcp-legalize-kr
-- Demo video: TO BE ADDED AFTER PUBLIC YOUTUBE UPLOAD
+- Demo video: https://www.youtube.com/watch?v=jqVPedEtprw
+- Published submission: https://devpost.com/software/legalize-kr-webmcp

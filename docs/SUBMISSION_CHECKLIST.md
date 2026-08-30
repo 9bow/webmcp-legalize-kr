@@ -24,11 +24,11 @@
 
 ## Devpost
 
-- [ ] Join the hackathon as an individual entrant.
-- [ ] Paste and review the English submission description.
-- [ ] Add the live URL and public repository URL.
+- [x] Join the hackathon as an individual entrant.
+- [x] Paste and review the English submission description.
+- [x] Add the live URL and public repository URL.
 - [x] Record a demo shorter than three minutes with English narration or English translation.
 - [ ] Upload the demo publicly to YouTube without copyrighted music.
-- [ ] Add the public YouTube URL.
-- [ ] Submit before September 3, 2026 at 1:00 PM PDT / September 4, 2026 at 5:00 AM KST.
+- [x] Add the YouTube URL to the Devpost submission.
+- [x] Submit before September 3, 2026 at 1:00 PM PDT / September 4, 2026 at 5:00 AM KST.
 - [ ] Freeze the Devpost entry, repository, and live deployment after the deadline until judging ends.
