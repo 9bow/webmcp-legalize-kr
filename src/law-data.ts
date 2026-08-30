@@ -81,7 +81,12 @@ export function parseLawMarkdown(markdown: string): {
   const headings = [...body.matchAll(headingPattern)];
   const articles = headings.map((match, index) => {
     const start = (match.index ?? 0) + match[0].length;
-    const end = headings[index + 1]?.index ?? body.length;
+    const nextArticle = headings[index + 1]?.index ?? body.length;
+    const nextStructuralHeading = body.slice(start).match(/^#{1,4}\s+.+$/m);
+    const nextStructure = nextStructuralHeading?.index === undefined
+      ? body.length
+      : start + nextStructuralHeading.index;
+    const end = Math.min(nextArticle, nextStructure);
     return {
       label: match[1] ?? "",
       title: match[2]?.trim() ?? "",

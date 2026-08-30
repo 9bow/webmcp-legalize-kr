@@ -29,6 +29,8 @@ const sampleMarkdown = `---
 **①** 출처를 확인한다.
 
 **②** 기준일을 확인한다.
+
+### 제2장 다음 장
 `;
 
 const law: LawIndexEntry = { id: "kr/시험법/법률.md", name: "시험법", path: "kr/시험법/법률.md" };
@@ -61,6 +63,7 @@ describe("parseLawMarkdown", () => {
       title: "검증",
     });
     expect(result.articles[1]?.text).toContain("기준일을 확인한다");
+    expect(result.articles[1]?.text).not.toContain("제2장 다음 장");
   });
 });
 
