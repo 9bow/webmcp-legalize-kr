@@ -28,6 +28,8 @@ export class LawDataError extends Error {
   }
 }
 
+class NoArchivedVersionError extends LawDataError {}
+
 function normalizeSearchValue(value: string): string {
   return value.normalize("NFKC").replace(/[\s·ㆍᆞ・]/g, "").toLocaleLowerCase("ko");
 }
@@ -154,7 +156,7 @@ export async function resolveLawSnapshot(
     signal,
   );
   const commit = commits[0];
-  if (!commit) throw new LawDataError(`${law.name} has no archived version on or before ${date}.`);
+  if (!commit) throw new NoArchivedVersionError(`${law.name} has no archived version on or before ${date}.`);
 
   const rawUrl = `${RAW_ROOT}/${commit.sha}/${encodePath(law.path)}`;
   const response = await fetch(rawUrl, { signal });
@@ -222,15 +224,18 @@ export async function searchLawsAtDate(
   validateDate(asOf, "as_of");
   const index = await loadLawIndex(signal);
   const matches = searchLawIndex(index.entries, query, limit);
-  const resolved = await Promise.allSettled(
+  const resolved = await Promise.all(
     matches.map(async (law) => {
-      const snapshot = await resolveLawSnapshot(law, asOf, signal);
-      return { ...law, commitSha: snapshot.commitSha, commitDate: snapshot.commitDate };
+      try {
+        const snapshot = await resolveLawSnapshot(law, asOf, signal);
+        return { ...law, commitSha: snapshot.commitSha, commitDate: snapshot.commitDate };
+      } catch (error) {
+        if (error instanceof NoArchivedVersionError) return null;
+        throw error;
+      }
     }),
   );
-  return resolved
-    .filter((result): result is PromiseFulfilledResult<LawIndexEntry & { commitSha: string; commitDate: string }> => result.status === "fulfilled")
-    .map((result) => result.value);
+  return resolved.filter((result) => result !== null);
 }
 
 export async function getArticle(

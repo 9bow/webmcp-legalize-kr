@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   diffArticle,
   findArticle,
@@ -103,5 +103,70 @@ describe("article lookup and comparison", () => {
     const reference = snapshotReference(snapshot());
     expect(reference).not.toHaveProperty("articles");
     expect(reference).toMatchObject({ commitSha: "abc123", requestedDate: "2025-02-01" });
+  });
+});
+
+
+describe("searchLawsAtDate transport failures", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  async function searchWith(commitResponse: () => Promise<Response>, rawStatus = 200) {
+    vi.resetModules();
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url === "/data/laws.json") return Response.json({ entries: [law] });
+      if (url.includes("/commits?")) return commitResponse();
+      return new Response(sampleMarkdown, { status: rawStatus });
+    }));
+    return (await import("./law-data")).searchLawsAtDate("시험", "2025-02-01");
+  }
+
+  it.each([403, 429, 500])("rejects GitHub HTTP %s instead of returning no matches", async (status) => {
+    await expect(searchWith(async () => new Response(null, { status }))).rejects.toThrow();
+  });
+
+  it.each([new TypeError("Network unavailable"), new DOMException("Cancelled", "AbortError")])(
+    "propagates network and cancellation errors", async (error) => {
+      await expect(searchWith(async () => { throw error; })).rejects.toBe(error);
+    },
+  );
+
+  it("rejects an archived text failure", async () => {
+    await expect(searchWith(async () => Response.json([
+      { sha: "abc123", commit: { committer: { date: "2025-01-01T00:00:00Z" } } },
+    ]), 503)).rejects.toThrow("could not be loaded");
+  });
+
+  it("rejects a partial lookup instead of publishing an incomplete search", async () => {
+    vi.resetModules();
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url === "/data/laws.json") return Response.json({ entries: [law, { ...law, name: "시험법2", path: "unavailable" }] });
+      if (url.includes("path=unavailable")) return new Response(null, { status: 403 });
+      if (url.includes("/commits?")) return Response.json([
+        { sha: "abc123", commit: { committer: { date: "2025-01-01T00:00:00Z" } } },
+      ]);
+      return new Response(sampleMarkdown);
+    }));
+    const { searchLawsAtDate } = await import("./law-data");
+    await expect(searchLawsAtDate("시험", "2025-02-01")).rejects.toThrow();
+  });
+
+  it("returns no matches only when the archive has no version", async () => {
+    await expect(searchWith(async () => Response.json([]))).resolves.toEqual([]);
+  });
+
+  it("returns available versions and omits only candidates without an archived version", async () => {
+    vi.resetModules();
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => {
+      if (url === "/data/laws.json") return Response.json({ entries: [law, { ...law, name: "시험법2", path: "missing" }] });
+      if (url.includes("path=missing")) return Response.json([]);
+      if (url.includes("/commits?")) return Response.json([
+        { sha: "abc123", commit: { committer: { date: "2025-01-01T00:00:00Z" } } },
+      ]);
+      return new Response(sampleMarkdown);
+    }));
+    const { searchLawsAtDate } = await import("./law-data");
+    await expect(searchLawsAtDate("시험", "2025-02-01")).resolves.toEqual([
+      { ...law, commitSha: "abc123", commitDate: "2025-01-01T00:00:00Z" },
+    ]);
   });
 });
